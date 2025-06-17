@@ -11,20 +11,20 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'price',
+        'sale_price',
         'stock',
         'category_id',
-        'images',
-        'average_rating',
-        'review_count',
+        'image',
+        'is_featured'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'images' => 'array',
-        'average_rating' => 'decimal:2',
-        'review_count' => 'integer',
+        'sale_price' => 'decimal:2',
+        'is_featured' => 'boolean'
     ];
 
     public function seller()

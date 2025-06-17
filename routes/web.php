@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\ReviewController;
@@ -13,8 +15,6 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\CustomerDashboardController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\HomeController;
 
 // Home Page
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -27,13 +27,13 @@ Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback']
 
 // Public Routes
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
-Route::get('/about', function () {
+Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('/about', function ()        {
     return Inertia::render('About');
 })->name('about');
-Route::get('/contact', function () {
+Route::get('/contact', function () {    
     return Inertia::render('Contact');
 })->name('contact');
 Route::get('/faq', function () {
@@ -46,7 +46,7 @@ Route::get('/shipping', function () {
 // Customer Routes (Requires Authentication)
 Route::middleware(['auth', 'verified'])->group(function () {
     // Customer Dashboard
-    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('customer.dashboard');
     Route::get('/dashboard/orders', [CustomerDashboardController::class, 'orders'])->name('customer.orders');
     Route::get('/dashboard/reviews', [CustomerDashboardController::class, 'reviews'])->name('customer.dashboard.reviews');
     Route::get('/dashboard/addresses', [CustomerDashboardController::class, 'addresses'])->name('customer.dashboard.addresses');

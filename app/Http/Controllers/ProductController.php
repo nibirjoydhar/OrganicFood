@@ -9,62 +9,33 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Product::with(['seller'])
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
+        $products = Product::with('category')
+            ->when(request('category'), function($query) {
+                $query->where('category_id', request('category'));
             })
-            ->when($request->category, function ($query, $category) {
-                $query->where('category_id', $category);
+            ->when(request('search'), function($query) {
+                $query->where('name', 'like', '%' . request('search') . '%');
             })
-            ->when($request->price_range, function ($query, $priceRange) {
-                [$min, $max] = explode('-', $priceRange);
-                if ($max === '+') {
-                    $query->where('price', '>=', $min);
-                } else {
-                    $query->whereBetween('price', [$min, $max]);
-                }
-            })
-            ->when($request->sort, function ($query, $sort) {
-                switch ($sort) {
-                    case 'price_asc':
-                        $query->orderBy('price', 'asc');
-                        break;
-                    case 'price_desc':
-                        $query->orderBy('price', 'desc');
-                        break;
-                    default:
-                        $query->latest();
-                        break;
-                }
-            }, function ($query) {
-                $query->latest();
-            });
+            ->paginate(12);
 
-        $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
-
-        return Inertia::render('Customer/Products/Index', [
-            'products' => $products,
-            'categories' => $categories,
-            'filters' => $request->only(['search', 'category', 'price_range', 'sort']),
+        return Inertia::render('Products/Index', [
+            'products' => $products
         ]);
     }
 
     public function show(Product $product)
     {
-        $product->load(['seller', 'reviews.user', 'images']);
-        $canReview = auth()->check() && !$product->reviews()->where('user_id', auth()->id())->exists();
-        $isWishlisted = auth()->check() && $product->wishlists()->where('user_id', auth()->id())->exists();
+        $product->load('category');
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->limit(4)
+            ->get();
 
-        return Inertia::render('Customer/Products/Show', [
+        return Inertia::render('Products/Show', [
             'product' => $product,
-            'canReview' => $canReview,
-            'isWishlisted' => $isWishlisted,
+            'relatedProducts' => $relatedProducts
         ]);
     }
 } 

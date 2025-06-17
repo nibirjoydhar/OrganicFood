@@ -20,20 +20,10 @@ return new class extends Migration
             // Ensure one review per product per order
             $table->unique(['user_id', 'product_id', 'order_id']);
         });
-
-        // Add review stats to products table
-        Schema::table('products', function (Blueprint $table) {
-            $table->decimal('average_rating', 3, 2)->default(0);
-            $table->integer('review_count')->unsigned()->default(0);
-        });
     }
 
     public function down()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn(['average_rating', 'review_count']);
-        });
-
         Schema::dropIfExists('reviews');
     }
 }; 

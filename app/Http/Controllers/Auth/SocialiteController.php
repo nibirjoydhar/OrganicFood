@@ -50,7 +50,7 @@ class SocialiteController extends Controller
             // Login
             Auth::login($user);
 
-            return redirect()->intended('/dashboard');
+            return redirect()->intended(route('customer.dashboard'));
 
         } catch (Exception $e) {
             return redirect()->route('login')

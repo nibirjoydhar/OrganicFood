@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,36 +11,25 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Get featured products
-        $featuredProducts = Product::where('is_featured', true)
-            ->with('category')
+        $featuredProducts = Product::with('category')
+            ->where('is_featured', true)
+            ->latest()
             ->take(8)
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'image' => $product->image,
-                    'category' => $product->category->name,
-                ];
-            });
+            ->get();
 
-        // Get main categories
-        $categories = Category::take(3)
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'description' => $category->description,
-                    'image' => $category->image,
-                ];
-            });
+        $categories = Category::withCount('products')
+            ->having('products_count', '>', 0)
+            ->get();
+
+        $newArrivals = Product::with('category')
+            ->latest()
+            ->take(12)
+            ->get();
 
         return Inertia::render('Home', [
             'featuredProducts' => $featuredProducts,
             'categories' => $categories,
+            'newArrivals' => $newArrivals
         ]);
     }
 } 
